@@ -77,7 +77,7 @@ class TicketController extends AppBaseController
         $messages = $this->ticketRepository->getMessageData($ticket);
 
 //        return view('Tickets::show', compact('ticket', 'messages'));
-        return $this->sendResponse(['ticket' => $ticket, 'messages' => $messages], 'Areas retrieved successfully.');
+        return $this->sendResponse(['ticket' => $ticket, 'messages' => $messages], 'Ticket data retrieved successfully.');
     }
     /**
      * Assign ticket to an admin (Admin only).
@@ -87,10 +87,12 @@ class TicketController extends AppBaseController
         $ticket->update(['assigned_to' => $request->assigned_to]);
         $updated = $this->ticketRepository->assignUpdate($ticket, $request->all());
         if (!$updated) {
-            return redirect()->back()->with('error', 'Something went wrong!!! [TCU-01]');
+//            return redirect()->back()->with('error', 'Something went wrong!!! [TCU-01]');
+            return $this->sendError('Something went wrong!!! [TCU-01]', 500);
         }
 
-        return redirect()->route('tickets.index')->with('success', 'Ticket assigned successfully.');
+//        return redirect()->route('tickets.index')->with('success', 'Ticket assigned successfully.');
+        return $this->sendResponse($updated, 'Ticket assigned successfully.');
     }
 
     /**
@@ -99,28 +101,34 @@ class TicketController extends AppBaseController
     public function updateStatus(TicketRequest $request, Ticket $ticket)
     {
         if (auth()->id() !== $ticket->assigned_to) {
-            return redirect()->route('tickets.index')->with('error', 'Only the assigned admin can update ticket status.');
+//            return redirect()->route('tickets.index')->with('error', 'Only the assigned admin can update ticket status.');
+            return $this->sendError('Only the assigned admin can update ticket status.', 500);
         }
 
         $updated = $this->ticketRepository->updateStatus($ticket, $request->all());
         if (!$updated) {
-            return redirect()->back()->with('error', 'Something went wrong!!! [TCU-02]');
+//            return redirect()->back()->with('error', 'Something went wrong!!! [TCU-02]');
+            return $this->sendError('Something went wrong!!! [TCU-02]', 500);
         }
 
-        return redirect()->route('tickets.index')->with('success', 'Ticket status updated.');
+//        return redirect()->route('tickets.index')->with('success', 'Ticket status updated.');
+        return $this->sendResponse($updated, 'Ticket status updated.');
     }
     public function assignForm(Ticket $ticket)
     {
         $admins = $this->ticketRepository->getAdminsData();
-        return view('Tickets::assign_form', compact('ticket', 'admins'));
+//        return view('Tickets::assign_form', compact('ticket', 'admins'));
+        return $this->sendResponse(['ticket' => $ticket, 'admins' => $admins], 'Admin data retrieved successfully.');
     }
 
     public function statusForm(Ticket $ticket)
     {
         if (auth()->id() !== $ticket->assigned_to) {
-            return redirect()->route('tickets.index')->with('error', 'Only the assigned admin can update the ticket status.');
+//            return redirect()->route('tickets.index')->with('error', 'Only the assigned admin can update the ticket status.');
+            return $this->sendError('Only the assigned admin can update the ticket status.', 500);
         }
-        return view('Tickets::status_form', compact('ticket'));
+//        return view('Tickets::status_form', compact('ticket'));
+        return $this->sendResponse(['ticket' => $ticket], 'Ticket data retrieved successfully.');
     }
     /**
      * Authorize access for ticket viewing.

@@ -18,11 +18,11 @@ Route::prefix('tickets')->middleware('auth:sanctum')->group(function () {
     Route::get('/{ticket}', [TicketController::class, 'show'])->name('show');
 
     // Admin: update ticket status or assignment
-    Route::middleware('isAdmin')->group(function () {
+//    Route::middleware('isAdmin')->group(function () {
         Route::get('/{ticket}/assign', [TicketController::class, 'assignForm'])->name('assign.form');
         Route::get('/{ticket}/status', [TicketController::class, 'statusForm'])->name('status.form');
 
         Route::put('/{ticket}/assign', [TicketController::class, 'assign'])->name('assign');
         Route::put('/{ticket}/status', [TicketController::class, 'updateStatus'])->name('status.update');
-    });
+//    });
 });

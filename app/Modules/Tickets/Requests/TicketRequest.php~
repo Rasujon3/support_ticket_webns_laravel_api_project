@@ -4,6 +4,7 @@ namespace App\Modules\Tickets\Requests;
 
 use App\Modules\Tickets\Models\Ticket;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class TicketRequest extends FormRequest
 {
@@ -27,12 +28,11 @@ class TicketRequest extends FormRequest
     {
         // Get the route name and apply null-safe operator
         $routeName = $this->route()?->getName();
+        Log::error('$routeName: ' , [
+            'routeName' => $routeName,
+        ]);
 
-        if ($routeName === 'assign') {
-            return Ticket::assignRules();
-        }
-
-        if ($routeName === 'status.update') {
+        if ($routeName === 'tickets.status.update') {
             return Ticket::updateStatusRules();
         }
 
