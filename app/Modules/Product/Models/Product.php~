@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Modules\Product\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Product extends Model
+{
+//    use HasFactory, SoftDeletes;
+    use HasFactory;
+
+    protected $table = 'productsss';
+
+    protected $fillable = [
+        'name',
+        'price',
+        'description',
+    ];
+
+    public static function rules($productId = null)
+    {
+        return [
+            'name' => 'required|string|max:191|unique:products,name,' . $productId,
+            'price' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+        ];
+    }
+}

@@ -1,0 +1,145 @@
+<?php
+
+namespace App\Modules\Product\Repositories;
+
+use App\Modules\Product\Models\Product;
+use Illuminate\Support\Facades\Log;
+
+class ProductRepository
+{
+
+    public function getFilteredQuery($filters)
+    {
+        $query = Product::query();
+
+        if (isset($filters['search']) && !empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('code', 'like', "%{$search}%");
+        }
+
+        if (isset($filters['filter']) && !empty($filters['filter'])) {
+            switch ($filters['filter']) {
+                case 'daily':
+                    $query->whereDate('created_at', now()->toDateString());
+                    break;
+                case 'weekly':
+                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'monthly':
+                    $query->whereMonth('created_at', now()->month);
+                    break;
+                case 'yearly':
+                    $query->whereYear('created_at', now()->year);
+                    break;
+            }
+        }
+
+        return $query;
+    }
+    public function getSummaryData()
+    {
+        $countries = Product::withTrashed()->get(); // Load all records including soft-deleted
+
+        $totalDraft = $countries->where('draft', true)->count();
+        $totalInactive = $countries->where('is_active', false)->count();
+        $totalActive = $countries->where('is_active', true)->count();
+        $totalDeleted = $countries->whereNotNull('deleted_at')->count();
+        $totalUpdated = $countries->whereNotNull('updated_at')->count();
+
+        // Ensure totalCountries is the sum of totalDraft + totalInactive + totalActive
+        $totalCountries = $totalDraft + $totalInactive + $totalActive+ $totalDeleted;
+
+        return [
+            'totalCountries' => $totalCountries,
+            'totalDraft' => $totalDraft,
+            'totalInactive' => $totalInactive,
+            'totalActive' => $totalActive,
+            'totalUpdated' => $totalUpdated,
+            'totalDeleted' => $totalDeleted,
+        ];
+    }
+    public function all()
+    {
+        return Product::all();
+    }
+
+    public function store(array $data): ?Product
+    {
+        try {
+            // Create the record in the database
+            $product = Product::create($data);
+
+            return $product;
+        } catch (\Exception $e) {
+            // Log the error
+            Log::error('Error in storing data: ' , [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return null;
+        }
+    }
+    public function update(Product $product, array $data): ?Product
+    {
+        try {
+            // Perform the update
+            $product->update($data);
+            return $product;
+        } catch (\Exception $e) {
+            // Log the error
+            Log::error('Error updating data: ' , [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return null;
+        }
+    }
+
+    public function updateFromDataTable(array $data)
+    {
+        $country = Product::find($data['id'] ?? null);
+        if (!$country) {
+            return ['success' => false, 'message' => 'Product not found'];
+        }
+        // Update only specific fields
+        $country->update([
+            'code' => $data['code'] ?? $country->code,
+            'name' => $data['name'] ?? $country->name,
+        ]);
+        ActivityLogger::log('Product Updated', 'Product', 'Product', $country->id, [
+            'name' => $country->name,
+            'code' => $country->code,
+        ]);
+        return $country;
+    }
+
+    public function delete(Product $product)
+    {
+        try {
+            $product->delete();
+            return true;
+        } catch (\Exception $e) {
+            // Log error
+            Log::error('Error deleting data: ' , [
+                'country_id' => $product->id,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return false;
+        }
+    }
+
+    public function find($id)
+    {
+        return Product::findOrFail($id);
+    }
+}
