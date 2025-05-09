@@ -30,15 +30,18 @@ class MessageController extends AppBaseController
         // Check permission (creator or assigned admin)
         $checkPermission = $this->messageRepository->checkPermission($ticket);
         if (!$checkPermission) {
-            return redirect()->route('tickets.index')->with('error', 'Unauthorized, only the creator or assigned admin can reply.');
+//            return redirect()->route('tickets.index')->with('error', 'Unauthorized, only the creator or assigned admin can reply.');
+            return $this->sendError('Unauthorized, only the creator or assigned admin can reply.', 500);
         }
 
         $store = $this->messageRepository->store($request, $ticket);
 
         if (!$store) {
-            return redirect()->route('tickets.show', $ticket->id)->with('error', 'Failed to add reply.');
+//            return redirect()->route('tickets.show', $ticket->id)->with('error', 'Failed to add reply.');
+            return $this->sendError('Failed to add reply.', 500);
         }
 
-        return redirect()->route('tickets.show', $ticket->id)->with('success', 'Reply added successfully.');
+//        return redirect()->route('tickets.show', $ticket->id)->with('success', 'Reply added successfully.');
+        return $this->sendResponse([], 'Reply added successfully.');
     }
 }

@@ -52,7 +52,7 @@ class TicketRepository
     }
     public function getMessageData($ticket)
     {
-        return $ticket->messages()->with(['user', 'attachments'])->get();
+        return $ticket->messages()->with('user')->get();
     }
 
     public function assignUpdate(Ticket $ticket, array $data): ?Ticket
