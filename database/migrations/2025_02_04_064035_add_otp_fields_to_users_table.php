@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('username')->unique()->after('email');
-            $table->string('otp')->nullable()->after('password');
-            $table->boolean('otp_enabled')->default(false)->after('otp');
-        });
+//        Schema::table('users', function (Blueprint $table) {
+//            $table->string('username')->unique()->after('email');
+//            $table->string('otp')->nullable()->after('password');
+//            $table->boolean('otp_enabled')->default(false)->after('otp');
+//        });
     }
 
     /**
