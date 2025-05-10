@@ -19,7 +19,7 @@ class MessageRepository
         }
         return true;
     }
-    public function store($request, $ticket): bool
+    public function store($request, $ticket): ?Message
     {
         DB::beginTransaction();
         try {
@@ -46,7 +46,7 @@ class MessageRepository
             }
             DB::commit();
 
-            return true;
+            return $message;
         } catch (\Exception $e) {
             DB::rollBack();
             // Log the error
@@ -57,7 +57,7 @@ class MessageRepository
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return false;
+            return null;
         }
     }
     private function storeFile($file)
