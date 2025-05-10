@@ -21,32 +21,21 @@ class RegisterController extends AppBaseController
     public function register(Request $request)
     {
         try {
-            // Validate input data
-            $validatedData = $request->validate([
-                'name' => 'required|string|max:255',
-                'username' => 'required|string|max:255|unique:users,username',
-                'email' => 'required|string|email|max:255|unique:users,email',
-                'password' => 'required|string|min:8',
+            $request->validate([
+                'name'     => 'required|string|max:255',
+                'email'    => 'required|email|unique:users',
+                'password' => 'required|string|min:6|confirmed',
             ]);
 
-            DB::beginTransaction();
-
-            // Create new user
             $user = User::create([
-                'name' => $validatedData['name'],
-                'username' => $validatedData['username'],
-                'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password']),
+                'name'     => $request->name,
+                'email'    => $request->email,
+                'password' => $request->password, // auto-hashed by mutator
+                'role'     => 'user', // default role
             ]);
-
-            // Generate API token
-            $token = $user->createToken('API Token')->plainTextToken;
-
-            DB::commit();
 
             return $this->sendResponse([
                 'user' => $user,
-                'token' => $token,
             ], 'User created successfully.');
         } catch (ValidationException $e) {
             return response()->json([
